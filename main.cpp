@@ -6,19 +6,18 @@
 #include"shaderClass.h"
 #include"VAO.h"
 #include"VBO.h"
-#include "EBO.h"
+#include"EBO.h"
 
-
- GLfloat vertices[] = {
+GLfloat vertices[] = {
     // Main Triangle
-    -0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,    // Left vertex
-    0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,     // Right vertex
-    0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f,  // Top vertex
+    -0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, 0.8f, 0.3f, 0.02f,  // Left vertex
+    0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f, 0.8f, 0.3f, 0.02f,   // Right vertex
+    0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f, 1.0f, 0.6f, 0.32f,  // Top vertex
 
     // Additional Points (Fixing the syntax)
-    -0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,  // Point 1
-    0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,   // Point 2
-    0.0f / 2, -0.5f * float(sqrt(3)) / 3, 0.0f,  // Point 3
+    -0.25f , 0.5f * float(sqrt(3)) / 6, 0.0f, 0.9f, 0.45f, 0.17f,  // Point 1
+    0.25f , 0.5f * float(sqrt(3)) / 6, 0.0f, 0.9f, 0.45f, 0.17f,   // Point 2
+    0.0f , -0.5f * float(sqrt(3)) / 3, 0.0f, 0.8f, 0.3f, 0.02f,    // Point 3
 };
 
 GLuint indices[] = {0, 3, 5, 3, 2, 4, 5, 4, 1};
@@ -46,22 +45,24 @@ int main() {
   // Set viewport size
   glViewport(0, 0, 800, 800);
 
- Shader shaderProgram("default.vert", "default.frag");
+  Shader shaderProgram("default.vert", "default.frag");
 
+  VAO VAO1;
+  VAO1.Bind();
 
- VAO VAO1;
- VAO1.Bind();
+  VBO VBO1(vertices, sizeof(vertices));
+  EBO EBO1(indices, sizeof(indices));
 
- VBO VBO1(vertices, sizeof(vertices));
- EBO EBO1(indices, sizeof(indices));
+  VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 6 * sizeof(float),
+                  (void*)0);  // Position
+  VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, 6 * sizeof(float),
+                  (void*)(3 * sizeof(float)));  // Color
 
- VAO1.LinkVBO(VBO1, 0);
- VAO1.Unbind();
- VBO1.Unbind();
+  VAO1.Unbind();
+  VBO1.Unbind();
+  EBO1.Unbind();
 
- EBO1.Unbind();
-
-
+  GLuint uniID = glGetUniformLocation(shaderProgram.ID, "scale");
 
   // Render loop
   while (!glfwWindowShouldClose(window)) {
@@ -71,9 +72,10 @@ int main() {
 
     // Use the shader program
     shaderProgram.Activate();
+    glUniform1f(uniID, 0.5f);
 
     VAO1.Bind();
-    glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT,0);  // Draw the triangle
+    glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);  // Draw the triangle
 
     // Swap buffers and poll events
     glfwSwapBuffers(window);
@@ -85,7 +87,6 @@ int main() {
   VBO1.Delete();
   EBO1.Delete();
   shaderProgram.Delete();
-
 
   // Destroy window and terminate GLFW
   glfwDestroyWindow(window);
